@@ -36,7 +36,7 @@ const BottomTabNavigation = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen}  />
     </Tab.Navigator>
   )
 }
