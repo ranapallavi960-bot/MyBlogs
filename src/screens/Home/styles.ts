@@ -1,7 +1,9 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    marginBottom:10
+  },
   appLogo: {
     width: 40,
     height: 40,
@@ -21,7 +23,8 @@ const styles = StyleSheet.create({
     paddingHorizontal:20,
     paddingVertical:10,
     alignItems:"center"
-  }
+  },
+ 
 });
 
 export default styles;

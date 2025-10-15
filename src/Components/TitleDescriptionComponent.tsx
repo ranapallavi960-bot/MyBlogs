@@ -1,28 +1,30 @@
 import { useNavigation } from '@react-navigation/native'
-import React from 'react'
+import React, { useState } from 'react'
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
-import { setInputValues } from '../store/slices/blogSlice'
+import firestore from '@react-native-firebase/firestore';
 
 const TitleDescriptionComponent = () => {
 const state = useSelector((state: any) => state.blogs)
   const dispatch = useDispatch()
 
+  const[name,setName]=useState("")
+  const[title,setTitle]=useState("")
+  const[description,setDescription]=useState("")
+
     const navigation=useNavigation()
-    const onHandleChange = (value, field) => {
-            console.log("field : ", field)
-            console.log("value : ", value)
+
+    const addBlog=()=>{
+    firestore().collection("blogs").add({
+      name:name,
+      title:title,
+      description:description
+    })
+  }
     
-            dispatch(setInputValues({ [field]: value }))
-        }
  const handlePost=()=>{
-      if (!state.title.trim() || !state.description.trim()) {
-            Alert.alert('Please fill both fields!')
-            return
-        }
-        console.log('Title:', state.title)
-        console.log('Description:', state.description)
+        addBlog()
         Alert.alert('Post created!')
         navigation.goBack()
  }
@@ -34,21 +36,30 @@ const state = useSelector((state: any) => state.blogs)
                 <Pressable onPress={()=>handlePost()}><Text style={styles.postBtn}>Post</Text></Pressable>
             </View>
             <View style={styles.titleDescriptionBox}>
+                <Text style={styles.titleLable}>Author Name</Text>
+                <View style={styles.titleInput}>
+
+                    <TextInput
+                        placeholder='Enter name'
+                        value={name}
+                        onChangeText={(value)=>setName(value,'name')}
+                    />
+                </View>
                 <Text style={styles.titleLable}>Title</Text>
                 <View style={styles.titleInput}>
 
                     <TextInput
                         placeholder='Enter title'
-                        value={state.title}
-                        onChangeText={(value)=>onHandleChange(value,'title')}
+                        value={title}
+                        onChangeText={(value)=>setTitle(value,'title')}
                     />
                 </View>
                 <Text style={styles.descriptionlabel}>Description</Text>
                 <View style={styles.descriptionInput}>
                     <TextInput
                         placeholder='Enter description'
-                        value={state.description}
-                        onChangeText={(value)=>onHandleChange(value,'description')}
+                        value={description}
+                        onChangeText={(value)=>setDescription(value,'description')}
                         style={styles.description}
                         multiline
                     />

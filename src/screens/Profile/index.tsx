@@ -1,77 +1,87 @@
 import React from 'react'
 import { Image, StyleSheet, Text, View } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ProfileScreen = () => {
   return (
-    <SafeAreaView>
-      
-      <View style={styles.displayProfile}>
-        <Image 
-        source={require('../../assests/images/block1.png')}
-        style={styles.profileImage}
-        />
-      </View>
-      <View style={styles.containerContent}>
-        <View style={styles.aboutUser}>
-          <Image
-            style={styles.userIcon}
-            source={require('../../assests/images/user.png')}
-          />
-          <View>
-            <Text style={styles.setTitle}>Name</Text>
-            <Text style={styles.setDescription}>Pallavi Rana</Text>
+    <View style={styles.container}>
+      <LinearGradient colors={['#b4a7d6', '#9fc5e8']} style={{flex:1}}>
+          <View style={styles.displayProfile}>
+            <Image
+              source={require('../../assests/images/block1.png')}
+              style={styles.profileImage}
+            />
           </View>
-        </View>
+          <View style={styles.containerContent}>
+            <View style={styles.aboutUser}>
+              <Image
+                style={styles.userIcon}
+                source={require('../../assests/images/user.png')}
+              />
+              <View>
+                <Text style={styles.setTitle}>Name</Text>
+                <Text style={styles.setDescription}>Pallavi Rana</Text>
+              </View>
+            </View>
 
-        <View style={styles.aboutUser}>
-          <Image
-            style={styles.userIcon}
-            source={require('../../assests/images/about.png')}
-          />
-          <View>
-            <Text style={styles.setTitle}>About</Text>
-            <Text style={styles.setDescription}>
-              Hey there! i am using ToDo
-            </Text>
-          </View>
-        </View>
+            <View style={styles.aboutUser}>
+              <Image
+                style={styles.userIcon}
+                source={require('../../assests/images/about.png')}
+              />
+              <View>
+                <Text style={styles.setTitle}>About</Text>
+                <Text style={styles.setDescription}>
+                  Hey there! i am using ToDo
+                </Text>
+              </View>
+            </View>
 
-        <View style={styles.aboutUser}>
-          <Image
-            style={styles.userIcon}
-            source={require('../../assests/images/contact.png')}
-          />
-          <View>
-            <Text style={styles.setTitle}>Contact</Text>
-            <Text style={styles.setDescription}>9834759367</Text>
+            <View style={styles.aboutUser}>
+              <Image
+                style={styles.userIcon}
+                source={require('../../assests/images/contact.png')}
+              />
+              <View>
+                <Text style={styles.setTitle}>Contact</Text>
+                <Text style={styles.setDescription}>9834759367</Text>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
-    </SafeAreaView>
+      </LinearGradient>
+    </View >
   )
 }
 
 export default ProfileScreen
 
-const styles=StyleSheet.create({
-  displayProfile:{
-    alignItems: 'center',
-    marginVertical: 20,
+const styles = StyleSheet.create({
+  container:{
+    // backgroundColor:"green",
+    flex:1
   },
-  profileImage:{
-      width: 170,
+  displayProfile: {
+    alignItems: 'center',
+    // marginVertical: 20,
+    // backgroundColor:"pink",
+    marginTop:50
+  },
+  profileImage: {
+    width: 170,
     height: 170,
     borderRadius: 100,
     resizeMode: 'cover',
   },
-   containerContent: {
+  containerContent: {
     paddingLeft: 20,
+    // backgroundColor:"beige",
+    marginTop:50
   },
-   userIcon: {
+  userIcon: {
     width: 20,
     height: 20,
-    tintColor: 'grey',
+    tintColor: '#fff',
   },
   aboutUser: {
     flexDirection: 'row',
@@ -82,9 +92,11 @@ const styles=StyleSheet.create({
   setTitle: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'black',
+   
   },
 
   setDescription: {
-    color: 'grey',
+    color: '#fff',
   },
 })
