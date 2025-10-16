@@ -6,7 +6,8 @@ import styles from './styles'
 import { useNavigation } from '@react-navigation/native'
 import auth from '@react-native-firebase/auth'
 import { useDispatch, useSelector } from 'react-redux'
-import { setEmail, setInputValues, setPassword } from '../../store/slices/blogSlice'
+import { setEmail, setInputValues, setIsLogin, setPassword } from '../../store/slices/blogSlice'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 
 
@@ -16,20 +17,30 @@ const SignUpScreen = () => {
     const dispatch = useDispatch()
 
     const navigation = useNavigation()
-    const signUpTestFn = () => {
-        // Alert.alert("Signup pressed")
-        auth().createUserWithEmailAndPassword(state.email, state.password).then(() => {
-            Alert.alert("User Created")
-          
-            
-        }).catch((error) => {
-            // console.log(error.code)
-            // Alert.alert("error Created")
-            // console.log("Signup Error Code:", error.code)
-            // console.log("Signup Error Message:", error.message)
-            Alert.alert("Error: " + error.code)
-        })
-    }
+    const signUpTestFn = async () => {
+        try {
+            const result = await auth().createUserWithEmailAndPassword(state.email, state.password);
+
+            // ✅ Get the created user
+            const user = result.user;
+
+            // ✅ Get the Firebase ID token (JWT)
+            const token = await user.getIdToken();
+            await AsyncStorage.setItem('token', token)
+            dispatch(setIsLogin(true))
+            console.log("User Token:", token);
+
+            Alert.alert("User Created Successfully!");
+
+            // You can store it if needed:
+            // await AsyncStorage.setItem('userToken', token);
+
+        } catch (error: any) {
+            console.log("Signup Error:", error);
+            Alert.alert("Error: " + error.code);
+        }
+    };
+
     const onHandleChange = (value, field) => {
         console.log("field : ", field)
         console.log("value : ", value)
@@ -39,9 +50,10 @@ const SignUpScreen = () => {
     console.log("hello")
     const onSignUp = () => {
         signUpTestFn()
+
         // navigation.navigate("BottomTabs")
-        
-        
+
+
     }
 
     return (

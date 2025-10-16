@@ -6,7 +6,8 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigation } from '@react-navigation/native'
 import auth from '@react-native-firebase/auth'
-import { setInputValues } from '../../store/slices/blogSlice'
+import { setInputValues, setIsLogin } from '../../store/slices/blogSlice'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const LoginScreen = () => {
     const state = useSelector(state => state.blogs)
@@ -14,20 +15,49 @@ const LoginScreen = () => {
 
     const navigation = useNavigation()
 
+    // const loginWithEmailPassword = async () => {
+    //     try {
+    //         console.log("state:",state)
+    //         const result = await auth().signInWithEmailAndPassword(state.email, state.password)
+
+    //         console.log("result: ",result)
+    //         navigation.navigate("BottomTabs")
+    //         // Alert.alert("Logged successfully")
+
+    //     } catch (error: any) {
+    //           console.log("result: ",error)
+    //         Alert.alert(error.message)
+    //     }
+    // }
+
     const loginWithEmailPassword = async () => {
         try {
-            // console.log("state:",state)
-            // const result = await auth().signInWithEmailAndPassword(state.email, state.password)
-            
-            // console.log("result: ",result)
-            navigation.navigate("BottomTabs")
-            // Alert.alert("Logged successfully")
-            
+            console.log("state:", state);
+
+            const result = await auth().signInWithEmailAndPassword(state.email, state.password);
+            console.log("result:", result);
+
+            // ✅ Get the user object
+            const user = result.user;
+
+            // ✅ Get the ID token (JWT)
+
+            const token = await user.getIdToken();
+            await AsyncStorage.setItem('token', token)
+            dispatch(setIsLogin(true))
+            console.log("Firebase ID Token:", token);
+
+            // You can now use this token for API requests or save it in AsyncStorage
+            // await AsyncStorage.setItem('userToken', token);
+
+            navigation.navigate("BottomTabs");
+
         } catch (error: any) {
-              console.log("result: ",error)
-            Alert.alert(error.message)
+            console.log("Login error:", error);
+            Alert.alert(error.message);
         }
-    }
+    };
+
     const onHandleChange = (value, field) => {
         console.log("field : ", field)
         console.log("value : ", value)

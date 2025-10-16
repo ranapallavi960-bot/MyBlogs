@@ -2,21 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import SplashScreen from './src/screens/Splash';
-import { setIsSplash } from './src/store/slices/blogSlice';
-import LoginSignUpScreen from './src/screens/LoginOrSignUp';
+import { setIsLogin, setIsSplash } from './src/store/slices/blogSlice';
+
 import { NavigationContainer } from '@react-navigation/native'
-import { Stack } from './src/navigation/navigation.config';
-import LoginScreen from './src/screens/Login';
-import SignUpScreen from './src/screens/SignUp';
-import BottomTabNavigation from './src/navigation/BottomTabNavigation';
-import messaging from '@react-native-firebase/messaging';
-import TitleDescriptionCard from './src/Components/TitleDescriptionComponent';
-import TitleDescription from './src/screens/TitleDescription';
+
+import MainNavigation from './src/navigation/MainNavigation';
+import AuthNavigation from './src/navigation/AuthNavigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 console.log("Logs are working!")
 
 function App() {
-const state = useSelector((state: any) => state.blogs)
+  const state = useSelector((state: any) => state.blogs)
   const dispatch = useDispatch()
 
   // async function requestUserPermission() {
@@ -34,20 +31,25 @@ const state = useSelector((state: any) => state.blogs)
   //   console.log("Token = ", token)
   // }
 
-  
+  const checkAuth = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        dispatch(setIsLogin(true));
+      }
+    } catch (error) {
+      console.log("check auth error: ", error)
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSplash(false));
+      }, 2000);
+    }
+  }
+
 
 
   useEffect(() => {
-    const myTimeout = setTimeout(() => {
-      dispatch(setIsSplash(false));
-      // requestUserPermission()
-      // getToken()
-      console.log("This is timeout function")
-    }, 2000);
-
-    return () => {
-      clearTimeout(myTimeout);
-    }
+    checkAuth()
   }, [])
 
   if (state.isSplash) {
@@ -56,30 +58,9 @@ const state = useSelector((state: any) => state.blogs)
 
   return (
     <NavigationContainer >
-      <Stack.Navigator screenOptions={{
-        headerShown: false
-      }} >
-        <Stack.Screen
-          name="LoginOrSignUp"
-          component={LoginSignUpScreen} />
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen} />
-        <Stack.Screen
-          name="SignUp"
-          component={SignUpScreen} />
-        <Stack.Screen          
-          name="BottomTabs"
-          component={BottomTabNavigation} />
-           <Stack.Screen          
-          name="TitleDescription"
-          component={TitleDescription} />
-
-      </Stack.Navigator>
+      {state.isLogin ? <MainNavigation /> : <AuthNavigation />}
     </NavigationContainer>
   );
-
-
 
 }
 
@@ -90,5 +71,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
- 
+
 })

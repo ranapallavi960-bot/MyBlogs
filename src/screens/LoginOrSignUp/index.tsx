@@ -31,8 +31,7 @@ const LoginSignUpScreen = () => {
                         <AnimatedPressable 
                         style={!state.isLogin ? styles.activeBtn : styles.loginSignUpBtn} 
                         entering={FadeIn.duration(500)}
-                         onPress={() => dispatch(setIsLogin(false),
-                                 navigation.navigate("Login")) }
+                         onPress={() => navigation.navigate("Login")}
                         >
                             <Text
                                 style={styles.loginSignUpText}
@@ -40,9 +39,7 @@ const LoginSignUpScreen = () => {
                             >Login</Text>
                         </AnimatedPressable>
                         <AnimatedPressable 
-                        onPress={() => dispatch(setIsLogin(true),
-                                 navigation.navigate("SignUp"))
-                                }
+                        onPress={() =>navigation.navigate("SignUp")}
                         entering={FadeIn.duration(500)}
                         style={state.isLogin ? styles.activeBtn : styles.loginSignUpBtn}>
                             <Text

@@ -8,11 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const TitleDescriptionCard = ({ name, title, description }) => {
 
-const [showFullText, setShowFullText] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
   const state = useSelector(state => state.blogs)
   const dispatch = useDispatch()
 
- const toggleText = () => {
+  const toggleText = () => {
     setShowFullText(!state.showFullText);
   };
 
@@ -34,18 +34,18 @@ const [showFullText, setShowFullText] = useState(false);
         {description}
       </Text> */}
       <Text numberOfLines={showFullText ? undefined : 3} ellipsizeMode="tail">
-  {description || ''}
-</Text>
+        {description || ''}
+      </Text>
 
-{typeof description === 'string' && description.length > 100 && (
- <Pressable onPress={toggleText}>
-  <Text style={styles.moreLessText}>
-    {showFullText ? 'Show less' : 'Read more'}
-  </Text>
-</Pressable>
-)}
+      {typeof description === 'string' && description.length > 100 && (
+        <Pressable onPress={toggleText}>
+          <Text style={styles.moreLessText}>
+            {showFullText ? 'Show less' : 'Read more'}
+          </Text>
+        </Pressable>
+      )}
       <View style={styles.likeCommentIconBox}>
-        <Pressable onPress={() =>dispatch(setIsLike(prev=>!prev))}>
+        <Pressable onPress={() => dispatch(setIsLike(prev => !prev))}>
           {!state.isLike ? (
             <Image
               style={styles.likeCommentIcon}
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 10
   },
-    moreLessText: {
+  moreLessText: {
     color: 'blue',
     marginTop: 4,
     fontWeight: '600',
