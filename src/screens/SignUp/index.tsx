@@ -19,21 +19,13 @@ const SignUpScreen = () => {
     const navigation = useNavigation()
     const signUpTestFn = async () => {
         try {
-            const result = await auth().createUserWithEmailAndPassword(state.email, state.password);
-
-            // ✅ Get the created user
+            const result = await auth().createUserWithEmailAndPassword(state.email, state.password);           
             const user = result.user;
-
-            // ✅ Get the Firebase ID token (JWT)
             const token = await user.getIdToken();
             await AsyncStorage.setItem('token', token)
             dispatch(setIsLogin(true))
             console.log("User Token:", token);
-
-            Alert.alert("User Created Successfully!");
-
-            // You can store it if needed:
-            // await AsyncStorage.setItem('userToken', token);
+            Alert.alert("User Created Successfully!");       
 
         } catch (error: any) {
             console.log("Signup Error:", error);
@@ -44,16 +36,11 @@ const SignUpScreen = () => {
     const onHandleChange = (value, field) => {
         console.log("field : ", field)
         console.log("value : ", value)
-
         dispatch(setInputValues({ [field]: value }))
     }
     console.log("hello")
     const onSignUp = () => {
         signUpTestFn()
-
-        // navigation.navigate("BottomTabs")
-
-
     }
 
     return (

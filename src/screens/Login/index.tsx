@@ -33,23 +33,13 @@ const LoginScreen = () => {
     const loginWithEmailPassword = async () => {
         try {
             console.log("state:", state);
-
             const result = await auth().signInWithEmailAndPassword(state.email, state.password);
             console.log("result:", result);
-
-            // ✅ Get the user object
             const user = result.user;
-
-            // ✅ Get the ID token (JWT)
-
             const token = await user.getIdToken();
             await AsyncStorage.setItem('token', token)
             dispatch(setIsLogin(true))
             console.log("Firebase ID Token:", token);
-
-            // You can now use this token for API requests or save it in AsyncStorage
-            // await AsyncStorage.setItem('userToken', token);
-
             navigation.navigate("BottomTabs");
 
         } catch (error: any) {
@@ -68,7 +58,6 @@ const LoginScreen = () => {
         loginWithEmailPassword()
 
     }
-
 
     return (
         <SafeAreaView style={styles.container}>
@@ -99,7 +88,6 @@ const LoginScreen = () => {
                                 secureTextEntry
                             />
                         </View>
-
 
                     </View>
                     <Pressable> <Text style={styles.forgotPassword} >Forgot Password?</Text></Pressable>
