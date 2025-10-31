@@ -8,32 +8,71 @@ import auth from '@react-native-firebase/auth'
 import { useDispatch, useSelector } from 'react-redux'
 import { setEmail, setInputValues, setIsLogin, setPassword } from '../../store/slices/blogSlice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import firestore from '@react-native-firebase/firestore';
 
 
 
 const SignUpScreen = () => {
 
-    const state = useSelector(state => state.blogs)
+    const state = useSelector((state:any) => state.blogs)
     const dispatch = useDispatch()
 
     const navigation = useNavigation()
-    const signUpTestFn = async () => {
-        try {
-            const result = await auth().createUserWithEmailAndPassword(state.email, state.password);           
-            const user = result.user;
-            const token = await user.getIdToken();
-            await AsyncStorage.setItem('token', token)
-            dispatch(setIsLogin(true))
-            console.log("User Token:", token);
-            Alert.alert("User Created Successfully!");       
+    // 
+ const signUpTestFn = async () => {
+    if (!state.email || !state.password || !state.confirmPassword) {
+        Alert.alert("Error", "Please fill all fields!");
+        return;
+    }
+    if (state.password !== state.confirmPassword) {
+        Alert.alert("Error", "Passwords do not match!");
+        return;
+    }
 
-        } catch (error: any) {
-            console.log("Signup Error:", error);
-            Alert.alert("Error: " + error.code);
-        }
-    };
+    try {
+        // Firebase Authentication
+        const result = await auth().createUserWithEmailAndPassword(state.email, state.password);
+        const user = result.user;
+        const token = await user.getIdToken();
+        await AsyncStorage.setItem('token', token);
 
-    const onHandleChange = (value, field) => {
+        // ✅ Firestore me user details add karo UID ke sath
+        await firestore().collection("users").doc(user.uid).set({
+            name: state.name,
+            email: state.email,
+            uid: user.uid,
+            token: token,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+        });
+
+        dispatch(setIsLogin(true));
+        dispatch(setInputValues({
+            email: '',
+            password: '',
+            confirmPassword: '',
+            name: ''
+        }));
+
+        Alert.alert("Success", "User Created Successfully!");
+        console.log("User UID:", user.uid);
+        console.log("User Token:", token);
+
+    } catch (error:any) {
+        console.log("Signup Error:", error);
+        Alert.alert("Error: " + error.code);
+    }
+};
+
+
+    // const addUserDetails = (token) => {
+    //     firestore().collection("users").add({
+    //         name: state.name,
+    //         email: state.email,
+    //         token
+    //     })
+    // }
+
+    const onHandleChange = (value:string, field:string) => {
         console.log("field : ", field)
         console.log("value : ", value)
         dispatch(setInputValues({ [field]: value }))
@@ -41,6 +80,7 @@ const SignUpScreen = () => {
     console.log("hello")
     const onSignUp = () => {
         signUpTestFn()
+
     }
 
     return (
@@ -54,6 +94,15 @@ const SignUpScreen = () => {
 
                     </View>
                     <View style={styles.inputData}>
+                        <View style={styles.emailPasswordBox}>
+                            <TextInput
+                                placeholder='Enter Name'
+                                placeholderTextColor="#fff"
+                                value={state?.name}
+                                onChangeText={(value) => onHandleChange(value, "name")}
+                            />
+                        </View>
+
                         <View style={styles.emailPasswordBox}>
                             <TextInput
                                 placeholder='Email Address'
@@ -115,7 +164,7 @@ const SignUpScreen = () => {
                         </View>
 
                         <Pressable style={styles.loginBox}>
-                            <Text style={styles.lastRowText}>Already have an account? <Text style={styles.logIn} onPress={() => navigation.navigate("Login")} >Login Now</Text></Text>
+                            <Text style={styles.lastRowText}>Already have an account? <Text style={styles.logIn} onPress={() => navigation.navigate("Login" as never)} >Login Now</Text></Text>
                         </Pressable>
 
                     </Pressable>

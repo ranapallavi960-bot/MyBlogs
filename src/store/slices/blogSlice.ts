@@ -1,13 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  name:"",
   email: '',
   password: '',
   confirmPassword: '',
   isSplash: true,
   isLogin: false,
- 
-  isLike: false,
   showFullText:false,
 };
 const blogSlice = createSlice({
@@ -32,17 +31,9 @@ const blogSlice = createSlice({
     setIsLogin: (state, action) => {
       state.isLogin = action.payload;
     },
-    setTitle: (state, action) => {
-      state.title = action.payload;
-    },
-    setDescription: (state, action) => {
-      state.description = action.payload;
-    },
-    setIsLike: (state, action) => {
-      state.description = action.payload;
-    },
+  
     setShowFullText: (state, action) => {
-      state.description = action.payload;
+      state.showFullText = action.payload;
     },
   },
 });
@@ -53,9 +44,6 @@ export const {
   setPassword,
   setConfirmPassword,
   setInputValues,
-  setTitle,
-  setDescription,
-  setIsLike,
   setShowFullText,
 } = blogSlice.actions;
 export const blogReducer = blogSlice.reducer;

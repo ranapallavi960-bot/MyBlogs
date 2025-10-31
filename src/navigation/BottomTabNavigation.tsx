@@ -2,7 +2,8 @@ import React from 'react'
 import { Tab } from './navigation.config'
 import HomeScreen from '../screens/Home'
 import ProfileScreen from '../screens/Profile'
-import { Image } from 'react-native'
+import { Image, Pressable } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 
 const tabBaricons = {
   activeHome: require("../assests/images/activeHome.png"),
@@ -14,6 +15,7 @@ const tabBaricons = {
 
 
 const BottomTabNavigation = () => {
+   const navigation = useNavigation();
   const getTabBarIcon = (routeName, focused,) => {
     let iconName;
     console.log("iconName:", routeName)
@@ -27,6 +29,11 @@ const BottomTabNavigation = () => {
 
     return <Image source={iconName} style={{ width: 25, height: 25 }} />;
   };
+
+const onEditProfile=()=>{
+   navigation.navigate("EditProfile")
+}
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -36,7 +43,16 @@ const BottomTabNavigation = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ headerShown: true }}/>
+      <Tab.Screen 
+      name="Profile" 
+      component={ProfileScreen} 
+      options={{ 
+        headerShown: true ,
+        headerRight:()=><Pressable style={{paddingRight:15}} onPress={onEditProfile} ><Image source={require('../assests/images/editProfile.png')} style={{width:25 ,height:25,}} /></Pressable>,
+          headerStyle: {
+      backgroundColor: '#9fc5e8', // 👈 yahan apna color do
+    },
+        }}/>
     </Tab.Navigator>
   )
 }

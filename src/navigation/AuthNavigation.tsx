@@ -4,6 +4,7 @@ import LoginScreen from '../screens/Login'
 import LoginSignUpScreen from '../screens/LoginOrSignUp'
 import SignUpScreen from '../screens/SignUp'
 
+
 const AuthNavigation = () => {
   return (
     <Stack.Navigator 
@@ -21,6 +22,7 @@ const AuthNavigation = () => {
         <Stack.Screen
           name="SignUp"
           component={SignUpScreen} />
+          
     </Stack.Navigator>
   )
 }
