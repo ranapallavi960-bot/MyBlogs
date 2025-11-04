@@ -1,14 +1,20 @@
 import React, { FC, useEffect, useState } from 'react'
-import { Alert, Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Alert, Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import firestore from '@react-native-firebase/firestore'
 import { useDispatch, useSelector } from 'react-redux'
 import auth from '@react-native-firebase/auth'
 import { setUserData } from '../store/slices/userSlice'
 
-const TitleDescriptionCard: FC<BlogType> = ({ name, title, description, image, id, likes = [] }) => {
+const TitleDescriptionCard: FC<BlogType> = ({ title, description, image, id, likes = [] }) => {
   const [showFullText, setShowFullText] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [count, setCount] = useState(likes?.length || 0);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState<CommentType[]>([]);
+
+
   const userData = useSelector((state: any) => state.userDetail.data)
   const state = useSelector((state: any) => state.blogs)
   const dispatch = useDispatch()
@@ -67,10 +73,99 @@ const TitleDescriptionCard: FC<BlogType> = ({ name, title, description, image, i
     }
   }
 
+  const postComment = async () => {
+    if (!commentText.trim()) return Alert.alert('Error', 'Please write something.');
+
+    try {
+      const newComment = {
+        text: commentText,
+        userId: userData?.uid,
+        name: userData?.name,
+        profileImage: userData?.image || '',
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      };
+
+      await firestore()
+        .collection('blogs')
+        .doc(id)
+        .collection('comments')
+        .add(newComment);
+
+      setCommentText('');
+      fetchComments(); // refresh list after posting
+    } catch (error) {
+      console.log('Error posting comment:', error);
+      Alert.alert('Error', 'Unable to post comment.');
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const snapshot = await firestore()
+        .collection('blogs')
+        .doc(id)
+        .collection('comments')
+        .orderBy('createdAt', 'desc')
+        .get();
+
+      const commentList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setComments(commentList);
+    } catch (error) {
+      console.log('Error fetching comments:', error);
+    }
+  };
+
+  const deleteComment = async (commentId:string, commentUserId?:string) => {
+    if (userData?.uid !== commentUserId) {
+      return Alert.alert('Error', 'You can delete only your own comment.');
+    }
+
+    Alert.alert(
+      'Delete Comment',
+      'Are you sure you want to delete this comment?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await firestore()
+                .collection('blogs')
+                .doc(id)
+                .collection('comments')
+                .doc(commentId)
+                .delete();
+              Alert.alert('Deleted', 'Comment deleted successfully.');
+            } catch (error) {
+              console.log('Error deleting comment:', error);
+              Alert.alert('Error', 'Unable to delete comment.');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+
   useEffect(() => {
     getUserData()
-  }, []);
+    let unsubscribe:any;
 
+    if (commentModalVisible) {
+      unsubscribe = firestore()
+        .collection('blogs')
+        .doc(id)
+        .collection('comments')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(snapshot => {
+          const commentList:CommentType[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setComments(commentList);
+        });
+    }
+
+    return () => unsubscribe && unsubscribe(); // clean up listener
+  }, [commentModalVisible]);
 
 
   const onDeletePress = () => setModalVisible(true)
@@ -108,61 +203,95 @@ const TitleDescriptionCard: FC<BlogType> = ({ name, title, description, image, i
           </Text>
         </Pressable>
       )}
-      <View style={{ alignSelf: "center" }}>
-
+      {/* <View style={{ alignSelf: "center" }}>
         {image && (
           <Image
             style={{ width: 320, height: 280, resizeMode: 'contain', }}
             source={{ uri: image }}
           />
         )}
-      </View>
+      </View> */}
 
-      <View style={styles.likeIconDeleteBox}>
+      <Pressable onPress={() => setImageModalVisible(true)} style={{ alignSelf: "center" }}>
+        {image && (
+          <Image
+            style={{ width: 320, height: 280, resizeMode: 'contain' }}
+            source={{ uri: image }}
+          />
+        )}
+      </Pressable>
 
-        {/* <View >
 
-          <Pressable onPress={updateUser} style={{ alignItems:"center" }} >
+      {/* <View style={styles.likeCommentDeleteIconBox}>
+
+        <View style={{ alignItems: 'center',flexDirection:"row",gap:10 }}>
+         <View>
+           <Pressable onPress={updateUser}>
             {!likes?.includes(userData.uid) ? (
               <Image
-                style={styles.likeIcon}
+                style={styles.likeCommentDeleteIcon}
                 source={require("../assests/images/unlike.png")}
               />
             ) : (
               <Image
-                style={styles.likeIcon}
+                style={styles.likeCommentDeleteIcon}
                 source={require("../assests/images/like.png")}
               />
             )}
-
-          </Pressable>
-          <Text style={{ fontSize: 14, fontWeight: '600' }}>{count}</Text>
-        </View> */}
-        <View style={{ alignItems: 'center' }}>
-          <Pressable onPress={updateUser}>
-            {!likes?.includes(userData.uid) ? (
-              <Image
-                style={styles.likeIcon}
-                source={require("../assests/images/unlike.png")}
-              />
-            ) : (
-              <Image
-                style={styles.likeIcon}
-                source={require("../assests/images/like.png")}
-              />
-            )}
-          </Pressable>
-{count > 0 && (
-  <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 3 }}>{count}</Text>
-)}
+           </Pressable>
+           {count > 0 && (
+            <Text style={{ fontSize: 14, fontWeight: '600', marginTop: 3 }}>{count}</Text>
+           )}
+         </View>
+         <Image
+         source={require("../assests/images/comment.png")}
+         style={styles.likeCommentDeleteIcon}
+         />
         </View>
 
         <Pressable onPress={onDeletePress}>
           <Image
             source={require("../assests/images/delete.png")}
-            style={styles.deleteIcon}
+            style={styles.likeCommentDeleteIcon}
           />
         </Pressable>
+        
+      </View> */}
+
+      <View style={styles.likeCommentDeleteIconBox}>
+
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <Pressable onPress={updateUser} style={{ flexDirection: "column", alignItems: "center" }}>
+            <Image
+              style={styles.likeCommentDeleteIcon}
+              source={
+                likes?.includes(userData.uid)
+                  ? require("../assests/images/like.png")
+                  : require("../assests/images/unlike.png")
+              }
+            />
+            {count > 0 && (
+              <Text style={{ fontSize: 14, fontWeight: '600' }}>{count}</Text>
+            )}
+          </Pressable>
+
+          <Pressable onPress={() => setCommentModalVisible(true)}>
+            <Image
+              source={require("../assests/images/comment.png")}
+              style={styles.likeCommentDeleteIcon}
+            />
+          </Pressable>
+
+        </View>
+
+
+        <Pressable onPress={onDeletePress}>
+          <Image
+            source={require("../assests/images/delete.png")}
+            style={styles.likeCommentDeleteIcon}
+          />
+        </Pressable>
+
       </View>
 
       {/* Delete Confirmation Modal */}
@@ -186,6 +315,103 @@ const TitleDescriptionCard: FC<BlogType> = ({ name, title, description, image, i
           </View>
         </View>
       </Modal>
+      {/* Image Preview Modal */}
+      <Modal
+        visible={imageModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setImageModalVisible(false)}
+      >
+        <View style={styles.imageModalBackground}>
+          <Pressable
+            onPress={() => setImageModalVisible(false)}
+            style={styles.backButtonContainer}
+          >
+            <Image
+              source={require('../assests/images/cross.png')} // <-- apne icon ka path yahan lagao
+              style={styles.backButtonIcon}
+            />
+          </Pressable>
+
+          <Image
+            source={{ uri: image }}
+            style={styles.fullScreenImage}
+            resizeMode="contain"
+          />
+        </View>
+      </Modal>
+      {/* Comment Modal */}
+      <Modal
+        visible={commentModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setCommentModalVisible(false)}
+      >
+        <View style={styles.commentModalBackground}>
+          <View style={styles.commentModalContainer}>
+            <Text style={styles.commentHeader}>Comments</Text>
+
+            {/* Input */}
+            <View style={styles.commentInputBox}>
+              <TextInput
+                value={commentText}
+                onChangeText={setCommentText}
+                placeholder="Write a comment..."
+                style={styles.commentInput}
+              />
+              <Pressable onPress={postComment} style={styles.postButton}>
+                <Text style={styles.postButtonText}>Post</Text>
+              </Pressable>
+            </View>
+
+            {/* Comments List */}
+            <View style={styles.commentList}>
+              <View style={styles.commentList}>
+                {comments.length > 0 ? (
+                  comments.map((item) => (
+                    <View key={item?.id} style={styles.singleComment}>
+                      <View style={styles.commentHeaderRow}>
+                        <View style={styles.commentUserInfo}>
+                          <Image
+                            source={
+                              item.profileImage
+                                ? { uri: item.profileImage }
+                                : require('../assests/images/block1.png')
+                            }
+                            style={styles.commentUserImage}
+                          />
+                          <Text style={styles.commentName}>{item.name}</Text>
+                        </View>
+
+                        {item?.userId === userData?.uid && (
+                          <Pressable onPress={() => deleteComment(item?.id, item?.userId)}>
+                            <Image
+                              source={require('../assests/images/delete.png')}
+                              style={{ width: 18, height: 18, tintColor: 'red' }}
+                            />
+                          </Pressable>
+                        )}
+                      </View>
+
+                      <Text style={styles.commentText}>{item?.text}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={{ textAlign: 'center', color: '#666' }}>No comments yet</Text>
+                )}
+              </View>
+
+
+            </View>
+
+            <Pressable onPress={() => setCommentModalVisible(false)} style={styles.closeCommentButton}>
+              <Text style={styles.closeCommentText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+
     </View>
   )
 }
@@ -223,11 +449,11 @@ const styles = StyleSheet.create({
   descriptionText: {
     marginBottom: 10
   },
-  likeIcon: {
+  likeCommentDeleteIcon: {
     width: 25,
     height: 25,
   },
-  likeIconDeleteBox: {
+  likeCommentDeleteIconBox: {
     flexDirection: "row",
     gap: 10,
     marginTop: 10,
@@ -292,7 +518,120 @@ const styles = StyleSheet.create({
   noText: {
     color: '#fff',
     fontWeight: 'bold'
-  }
+  },
+  imageModalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  fullScreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 8,
+    borderRadius: 30,
+  },
+  backButtonIcon: {
+    width: 15,
+    height: 15,
+    tintColor: '#fff',
+  },
+  commentModalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commentModalContainer: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    maxHeight: '80%',
+  },
+  commentHeader: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  commentInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  postButton: {
+    backgroundColor: '#007bff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 6,
+  },
+  postButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  commentList: {
+    marginTop: 10,
+  },
+  singleComment: {
+    marginBottom: 8,
+    borderBottomWidth: 0.5,
+    borderColor: '#ccc',
+    paddingBottom: 6,
+  },
+  commentName: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  commentText: {
+    fontSize: 13,
+    color: '#333',
+  },
+  closeCommentButton: {
+    marginTop: 10,
+    backgroundColor: 'gray',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  closeCommentText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  commentHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  commentUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  commentUserImage: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ddd',
+  },
+
 })
 
 

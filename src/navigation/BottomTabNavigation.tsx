@@ -2,7 +2,7 @@ import React from 'react'
 import { Tab } from './navigation.config'
 import HomeScreen from '../screens/Home'
 import ProfileScreen from '../screens/Profile'
-import { Image, Pressable } from 'react-native'
+import { Image, Pressable, Text } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 
 const tabBaricons = {
@@ -16,7 +16,7 @@ const tabBaricons = {
 
 const BottomTabNavigation = () => {
    const navigation = useNavigation();
-  const getTabBarIcon = (routeName, focused,) => {
+  const getTabBarIcon = (routeName:any, focused:true) => {
     let iconName;
     console.log("iconName:", routeName)
     if (routeName === 'Home') {
@@ -31,7 +31,7 @@ const BottomTabNavigation = () => {
   };
 
 const onEditProfile=()=>{
-   navigation.navigate("EditProfile")
+   navigation.navigate("EditProfile" as never)
 }
 
   return (
@@ -48,9 +48,11 @@ const onEditProfile=()=>{
       component={ProfileScreen} 
       options={{ 
         headerShown: true ,
-        headerRight:()=><Pressable style={{paddingRight:15}} onPress={onEditProfile} ><Image source={require('../assests/images/editProfile.png')} style={{width:25 ,height:25,}} /></Pressable>,
+        headerRight:()=><Pressable style={{paddingRight:15}} onPress={onEditProfile} >
+          <Image source={require('../assests/images/editProfile.png')} style={{width:25 ,height:25,}} />
+          </Pressable>,
           headerStyle: {
-      backgroundColor: '#9fc5e8', // 👈 yahan apna color do
+      backgroundColor: '#9fc5e8',
     },
         }}/>
     </Tab.Navigator>

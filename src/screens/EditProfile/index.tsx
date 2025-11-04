@@ -96,7 +96,7 @@ const EditProfileScreen = () => {
 
   return (
     <SafeAreaView>
-    <KeyboardAvoidingView behavior='padding'>
+    <KeyboardAvoidingView behavior='position'>
       <ScrollView>
       <Pressable style={{ alignItems: 'center', marginTop: 50 }} onPress={openOptions}>
         <View

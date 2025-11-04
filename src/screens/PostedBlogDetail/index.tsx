@@ -2,14 +2,17 @@ import React from 'react'
 import { View } from 'react-native'
 import TitleDescriptionCard from '../../Components/TitleDescriptionCard'
 
-
-const PostedBlogDetail = () => {
-
-    
+const PostedBlogDetail = ({}) => {
 
   return (
     <View>
-      <TitleDescriptionCard/>
+      <TitleDescriptionCard
+    title="string"
+    description=""
+    id=""
+    image=""
+    name=""
+      />
     </View>
   )
 }
