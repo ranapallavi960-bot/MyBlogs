@@ -40,7 +40,7 @@ const ProfileScreen = () => {
         console.log("No user logged in")
       }
     } catch (error) {
-      console.log("Error fetching user:", error)
+      console.log("Error fetching user =========>:", error)
     }
   }
 

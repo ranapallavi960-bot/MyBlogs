@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Alert, Image, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -14,54 +14,55 @@ import firestore from '@react-native-firebase/firestore';
 
 const SignUpScreen = () => {
 
-    const state = useSelector((state:any) => state.blogs)
+    const state = useSelector((state: any) => state.blogs)
     const dispatch = useDispatch()
-
     const navigation = useNavigation()
-    // 
- const signUpTestFn = async () => {
-    if (!state.email || !state.password || !state.confirmPassword) {
-        Alert.alert("Error", "Please fill all fields!");
-        return;
-    }
-    if (state.password !== state.confirmPassword) {
-        Alert.alert("Error", "Passwords do not match!");
-        return;
-    }
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    try {
-        // Firebase Authentication
-        const result = await auth().createUserWithEmailAndPassword(state.email, state.password);
-        const user = result.user;
-        const token = await user.getIdToken();
-        await AsyncStorage.setItem('token', token);
+    const signUpTestFn = async () => {
+        if (!state.email || !state.password || !state.confirmPassword) {
+            Alert.alert("Error", "Please fill all fields!");
+            return;
+        }
+        if (state.password !== state.confirmPassword) {
+            Alert.alert("Error", "Passwords do not match!");
+            return;
+        }
 
-        // ✅ Firestore me user details add karo UID ke sath
-        await firestore().collection("users").doc(user.uid).set({
-            name: state.name,
-            email: state.email,
-            uid: user.uid,
-            token: token,
-            createdAt: firestore.FieldValue.serverTimestamp(),
-        });
+        try {
+            // Firebase Authentication
+            const result = await auth().createUserWithEmailAndPassword(state.email, state.password);
+            const user = result.user;
+            const token = await user.getIdToken();
+            await AsyncStorage.setItem('token', token);
 
-        dispatch(setIsLogin(true));
-        dispatch(setInputValues({
-            email: '',
-            password: '',
-            confirmPassword: '',
-            name: ''
-        }));
+            // ✅ Firestore me user details add karo UID ke sath
+            await firestore().collection("users").doc(user.uid).set({
+                name: state.name,
+                email: state.email,
+                uid: user.uid,
+                token: token,
+                createdAt: firestore.FieldValue.serverTimestamp(),
+            });
 
-        Alert.alert("Success", "User Created Successfully!");
-        console.log("User UID:", user.uid);
-        console.log("User Token:", token);
+            dispatch(setIsLogin(true));
+            dispatch(setInputValues({
+                email: '',
+                password: '',
+                confirmPassword: '',
+                name: ''
+            }));
 
-    } catch (error:any) {
-        console.log("Signup Error:", error);
-        Alert.alert("Error: " + error.code);
-    }
-};
+            Alert.alert("Success", "User Created Successfully!");
+            console.log("User UID:", user.uid);
+            console.log("User Token:", token);
+
+        } catch (error: any) {
+            console.log("Signup Error:", error);
+            Alert.alert("Error: " + error.code);
+        }
+    };
 
 
     // const addUserDetails = (token) => {
@@ -72,7 +73,7 @@ const SignUpScreen = () => {
     //     })
     // }
 
-    const onHandleChange = (value:string, field:string) => {
+    const onHandleChange = (value: string, field: string) => {
         console.log("field : ", field)
         console.log("value : ", value)
         dispatch(setInputValues({ [field]: value }))
@@ -82,6 +83,7 @@ const SignUpScreen = () => {
         signUpTestFn()
 
     }
+  
 
     return (
         <SafeAreaView style={styles.container}>
@@ -113,27 +115,53 @@ const SignUpScreen = () => {
                         </View>
 
                         <View style={styles.emailPasswordBox}>
-                            <TextInput
-                                placeholder='Password'
-                                placeholderTextColor="#fff"
-                                value={state?.password}
-                                onChangeText={(value) => onHandleChange(value, "password")}
-                                secureTextEntry
-                            />
+                            <View style={styles.inputPassword}>
+                                <TextInput
+                                    placeholder='Password'
+                                    placeholderTextColor="#fff"
+                                    value={state?.password}
+                                    onChangeText={(value) => onHandleChange(value, 'password')}
+                                    secureTextEntry={!showPassword}
+
+                                />
+                            </View>
+
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                <Image
+                                    source={
+                                        showPassword
+                                            ? require("../../assests/images/show.png")
+                                            : require("../../assests/images/hide.png")
+                                    }
+                                    style={styles.passwordShowHideIcon}
+                                />
+                            </TouchableOpacity>
                         </View>
+
                         <View style={styles.emailPasswordBox}>
-                            <TextInput
-                                placeholder='Confirm Password'
-                                placeholderTextColor="#fff"
-                                value={state?.confirmPassword}
-                                onChangeText={(value) => onHandleChange(value, "confirmPassword")}
-                                secureTextEntry
-                            />
+                            <View style={styles.inputPassword}>
+                                <TextInput
+                                    placeholder='Confirm Password'
+                                    placeholderTextColor="#fff"
+                                    value={state?.confirmPassword}
+                                    onChangeText={(value) => onHandleChange(value, 'confirmPassword')}
+                                    secureTextEntry={!showConfirmPassword}
+
+                                />
+                            </View>
+
+                            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                <Image
+                                    source={
+                                        showConfirmPassword
+                                            ? require("../../assests/images/show.png")
+                                            : require("../../assests/images/hide.png")
+                                    }
+                                    style={styles.passwordShowHideIcon}
+                                />
+                            </TouchableOpacity>
                         </View>
-
-
                     </View>
-
 
                     <TouchableOpacity style={styles.signUpBox} onPress={() => onSignUp()}>
                         <Text style={styles.signUp}  >Sign Up</Text>

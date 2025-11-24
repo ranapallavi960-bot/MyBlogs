@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
-  const userData = useSelector(state => state.userDetail.data);
+  const userData = useSelector((state:any) => state.userDetail.data);
   const dispatch = useDispatch();
 
   const [image, setImage] = useState(userData?.image || null);

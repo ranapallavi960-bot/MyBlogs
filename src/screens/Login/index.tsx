@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import styles from './styles'
 import { Alert, Image, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native'
@@ -10,25 +10,10 @@ import { setInputValues, setIsLogin } from '../../store/slices/blogSlice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const LoginScreen = () => {
-    const state = useSelector(state => state.blogs)
+    const state = useSelector((state: any) => state.blogs)
     const dispatch = useDispatch()
-
     const navigation = useNavigation()
-
-    // const loginWithEmailPassword = async () => {
-    //     try {
-    //         console.log("state:",state)
-    //         const result = await auth().signInWithEmailAndPassword(state.email, state.password)
-
-    //         console.log("result: ",result)
-    //         navigation.navigate("BottomTabs")
-    //         // Alert.alert("Logged successfully")
-
-    //     } catch (error: any) {
-    //           console.log("result: ",error)
-    //         Alert.alert(error.message)
-    //     }
-    // }
+    const [visible, setVisible] = useState(true)
 
     const loginWithEmailPassword = async () => {
         try {
@@ -40,7 +25,7 @@ const LoginScreen = () => {
             await AsyncStorage.setItem('token', token)
             dispatch(setIsLogin(true))
             console.log("Firebase ID Token:", token);
-            navigation.navigate("BottomTabs");
+            navigation.navigate("BottomTabs" as never);
 
         } catch (error: any) {
             console.log("Login error:", error);
@@ -48,7 +33,7 @@ const LoginScreen = () => {
         }
     };
 
-    const onHandleChange = (value, field) => {
+    const onHandleChange = (value: any, field: any) => {
         console.log("field : ", field)
         console.log("value : ", value)
 
@@ -58,6 +43,10 @@ const LoginScreen = () => {
         loginWithEmailPassword()
 
     }
+    const togglePasswordVisibility = () => {
+        setVisible(!visible);
+    };
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -80,14 +69,29 @@ const LoginScreen = () => {
                         </View>
 
                         <View style={styles.emailPasswordBox}>
-                            <TextInput
-                                placeholder='Password'
-                                placeholderTextColor="#fff"
-                                value={state?.password}
-                                onChangeText={(value) => onHandleChange(value, 'password')}
-                                secureTextEntry
-                            />
+                            <View style={styles.inputPassword}>
+                                <TextInput
+                                    placeholder='Password'
+                                    placeholderTextColor="#fff"
+                                    value={state?.password}
+                                    onChangeText={(value) => onHandleChange(value, 'password')}
+                                    secureTextEntry={visible}   // ← hide/show works here
+                                   
+                                />
+                            </View>
+
+                            <TouchableOpacity onPress={togglePasswordVisibility}>
+                                <Image
+                                    source={
+                                        visible
+                                            ? require("../../assests/images/hide.png")  // when hidden
+                                            : require("../../assests/images/show.png")  // when visible
+                                    }
+                                    style={styles.passwordShowHideIcon}
+                                />
+                            </TouchableOpacity>
                         </View>
+
 
                     </View>
                     <Pressable> <Text style={styles.forgotPassword} >Forgot Password?</Text></Pressable>
@@ -121,7 +125,7 @@ const LoginScreen = () => {
                         </View>
 
                         <Pressable style={styles.signUpBox}>
-                            <Text style={styles.lastRowText}>Dont't have an account? <Text style={styles.signUp} onPress={() => navigation.navigate("SignUp")}>Sign Up Now</Text></Text>
+                            <Text style={styles.lastRowText}>Dont't have an account? <Text style={styles.signUp} onPress={() => navigation.navigate("SignUp" as never)}>Sign Up Now</Text></Text>
                         </Pressable>
 
                     </Pressable>
